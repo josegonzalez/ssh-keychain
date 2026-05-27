@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # SPM dependencies declared in Package.swift (swift-argument-parser,
+  # swift-nio, swift-nio-ssh). Dependabot reads Package.swift directly and
+  # opens PRs when newer compatible versions are available.
+  #
+  # Sparkle is configured via SSHKeychainApp/project.yml + XcodeGen rather
+  # than the root Package.swift, so Dependabot doesn't track it here. Bump
+  # the `from:` constraint in project.yml manually when needed.
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - swift
+
+  # GitHub Actions versions in .github/workflows/. Catches actions/checkout
+  # and actions/cache version bumps so we don't drift onto unmaintained
+  # versions.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions

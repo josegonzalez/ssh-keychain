@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # Cancel in-flight runs on the same branch when a new push lands.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: swift test
+    # macos-15 (Sequoia) ships Xcode 16+ which gives us Swift 6.x - matches
+    # what `swift-tools-version:6.0` in Package.swift expects.
+    runs-on: macos-15
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift toolchain
+        run: |
+          swift --version
+          xcodebuild -version | head -1
+
+      # The build is dominated by compiling swift-nio + swift-nio-ssh from
+      # source on a cold cache (~2 min). Caching .build keyed on Package.swift
+      # makes subsequent runs feed-forward.
+      - name: Cache SPM build
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Build
+        run: swift build --build-tests
+
+      - name: Test
+        # --parallel: tests are isolated per backend and use t.TempDir-style
+        # workspaces, so they're safe to run concurrently. Saves ~5s on a hot
+        # cache, ~30s cold.
+        run: swift test --parallel
