@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sparkle appcast feed. Host this at the URL Info.plist's SUFeedURL points at
+  (currently https://josegonzalez.github.io/ssh-keychain/appcast.xml).
+
+  Replace the placeholders per release:
+    {VERSION}        -> "0.1.0"
+    {BUILD}          -> CFBundleVersion (integer), e.g. "1"
+    {PUB_DATE}       -> RFC 822 date, e.g. "Tue, 27 May 2026 12:00:00 +0000"
+    {DMG_URL}        -> e.g. "https://github.com/josegonzalez/ssh-keychain/releases/download/v0.1.0/SSH-Keychain-0.1.0.dmg"
+    {DMG_LENGTH}     -> file size in bytes (sign_update prints this)
+    {ED_SIGNATURE}   -> the base64 sparkle:edSignature from sign_update
+    {MIN_OS}         -> minimum supported macOS, e.g. "14.0"
+    {RELEASE_NOTES}  -> short HTML or escaped text; longer notes belong in a
+                       separate sparkle:releaseNotesLink URL.
+-->
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>SSH Keychain</title>
+        <link>https://josegonzalez.github.io/ssh-keychain/appcast.xml</link>
+        <description>Latest updates to SSH Keychain.</description>
+        <language>en</language>
+
+        <item>
+            <title>Version {VERSION}</title>
+            <pubDate>{PUB_DATE}</pubDate>
+            <sparkle:version>{BUILD}</sparkle:version>
+            <sparkle:shortVersionString>{VERSION}</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>{MIN_OS}</sparkle:minimumSystemVersion>
+            <description><![CDATA[{RELEASE_NOTES}]]></description>
+            <enclosure
+                url="{DMG_URL}"
+                length="{DMG_LENGTH}"
+                type="application/octet-stream"
+                sparkle:edSignature="{ED_SIGNATURE}"/>
+        </item>
+    </channel>
+</rss>

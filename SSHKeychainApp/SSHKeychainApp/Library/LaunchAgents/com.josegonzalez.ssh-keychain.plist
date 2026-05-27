@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.josegonzalez.ssh-keychain</string>
+
+    <!--
+        BundleProgram lets launchd resolve the binary relative to the calling
+        app bundle, so the launch agent keeps working when the .app is moved
+        or updated in place. ProgramArguments[0] is argv[0] only.
+    -->
+    <key>BundleProgram</key>
+    <string>Contents/MacOS/ssh-keychain</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>ssh-keychain</string>
+        <string>agent</string>
+        <string>--mach-service</string>
+        <string>com.josegonzalez.ssh-keychain.daemon</string>
+    </array>
+
+    <!--
+        XPC Mach service the daemon listens on for the app/CLI control
+        endpoint. Matches what AppCoordinator dials in DaemonXPCClient.
+    -->
+    <key>MachServices</key>
+    <dict>
+        <key>com.josegonzalez.ssh-keychain.daemon</key>
+        <true/>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <!--
+        Background-only process; no UI lifecycle. ProcessType=Interactive so
+        the agent isn't aggressively throttled when the user is using SSH.
+    -->
+    <key>ProcessType</key>
+    <string>Interactive</string>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/ssh-keychain.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/ssh-keychain.stderr.log</string>
+</dict>
+</plist>

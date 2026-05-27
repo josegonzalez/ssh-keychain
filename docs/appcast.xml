@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sparkle appcast feed for SSH Keychain.
+
+  Hosted at https://josegonzalez.github.io/ssh-keychain/appcast.xml via
+  GitHub Pages (Settings → Pages → Source: main / /docs).
+
+  When you cut a release with Distribution/release.sh, copy the printed
+  sparkle:edSignature + length values into a new <item> block below,
+  following the template in Distribution/appcast.xml.template.
+
+  The intentionally empty channel (no <item> entries) is Sparkle's way of
+  saying "no updates available." Existing installations check the feed,
+  parse zero items, and silently move on. This is the right starting
+  state so users can install the app before any release exists.
+-->
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>SSH Keychain</title>
+        <link>https://josegonzalez.github.io/ssh-keychain/appcast.xml</link>
+        <description>Latest updates to SSH Keychain.</description>
+        <language>en</language>
+    </channel>
+</rss>

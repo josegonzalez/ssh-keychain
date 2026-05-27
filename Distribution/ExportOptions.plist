@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Tells `xcodebuild -exportArchive` how to sign the app for release.
+
+  method=developer-id  → standalone DMG distribution (not Mac App Store).
+  signingStyle=manual  → we hand-pick the certificate so CI/automation is
+                         reproducible. Set DEVELOPMENT_TEAM and SIGNING_CERT
+                         via env vars in the build script.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>developer-id</string>
+
+    <key>signingStyle</key>
+    <string>manual</string>
+
+    <key>teamID</key>
+    <string>$TEAM_ID</string>
+
+    <key>signingCertificate</key>
+    <string>Developer ID Application</string>
+
+    <!--
+        Sparkle 2 requires hardened runtime to load its updater XPC service.
+        We already set ENABLE_HARDENED_RUNTIME=YES in project.yml; this just
+        ensures exportArchive respects it.
+    -->
+    <key>destination</key>
+    <string>export</string>
+
+    <!-- Strip Swift symbols Apple already provides as part of Xcode (smaller bundle). -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+</dict>
+</plist>

@@ -1,0 +1,24 @@
+.DS_Store
+.build/
+.swiftpm/
+Package.resolved
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+.netrc
+
+# XcodeGen produces SSHKeychainApp.xcodeproj from project.yml; the YAML is the
+# source of truth, the generated project isn't checked in.
+SSHKeychainApp/SSHKeychainApp.xcodeproj/
+
+# Distribution outputs
+build/
+
+# Scratch space (per CLAUDE.md convention)
+tmp/
