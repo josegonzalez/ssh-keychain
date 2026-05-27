@@ -55,7 +55,7 @@ targets:
         # and MUST be replaced before any real release. The actual private key
         # is generated with `Distribution/generate-sparkle-keys.sh` and lives
         # outside the repo.
-        SUFeedURL: https://josegonzalez.github.io/ssh-keychain/appcast.xml
+        SUFeedURL: https://josediazgonzalez.com/ssh-keychain/appcast.xml
         SUPublicEDKey: "Azio7p0p4Wf1jzP+kjR83d+0QyB/mkTgN6VKUpFnvJ4="
         SUEnableAutomaticChecks: true
         SUAutomaticallyUpdate: false       # require user confirmation per update

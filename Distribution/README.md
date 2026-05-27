@@ -38,11 +38,26 @@ You need each of these before any release:
 
 ## Cutting a release
 
+The release flow is two scripts. **`release.sh` produces the artifact** (slow,
+~25 min, mostly Apple's notary). **`publish.sh` ships it** (~10 sec, but
+irreversible side effects like GitHub Releases). Splitting them means a bad
+notarization doesn't yield a half-published release, and a bad publish doesn't
+waste 25 minutes redoing notarization.
+
+### Step 1: Write release notes
+
+Create `release-notes/<VERSION>.md` with the notes for this version. Plain
+markdown — `publish.sh` converts to HTML via uv at publish time. The file is
+also fed verbatim to `gh release create --notes-file` so it shows up on the
+GitHub Releases page.
+
+### Step 2: Build + notarize the artifact
+
 ```sh
-TEAM_ID=ABCDEF1234 NOTARY_PROFILE=ssh-keychain ./Distribution/release.sh
+TEAM_ID=2H4U2XX239 NOTARY_PROFILE=ssh-keychain ./Distribution/release.sh
 ```
 
-That runs, in order:
+Runs, in order:
 
 1. **`codesign-and-archive.sh`** — `xcodebuild archive` with Developer ID identity, then `xcodebuild -exportArchive` to produce `build/Export/SSH Keychain.app`. Both Sparkle.framework and our embedded `ssh-keychain` binary inherit hardened runtime + Developer ID signing automatically because they're inside the archive.
 
@@ -52,27 +67,74 @@ That runs, in order:
 
 4. **`notarize.sh build/SSH-Keychain-<VERSION>.dmg`** — notarize and staple the DMG too. Without this, first-launch from the DMG would require an internet round-trip to Apple.
 
-5. **`sign-update.sh build/SSH-Keychain-<VERSION>.dmg`** — print the
-   `sparkle:edSignature="..." length="..."` fragment to paste into the
-   appcast.
+5. **`sign-update.sh build/SSH-Keychain-<VERSION>.dmg`** — prints the `sparkle:edSignature="..." length="..."` fragment (informational; `publish.sh` re-derives it).
 
-## After the script finishes
+You can also stop after step 1 to validate codesigning without involving
+Apple's notary at all:
+```sh
+TEAM_ID=2H4U2XX239 ./Distribution/codesign-and-archive.sh
+```
 
-Manual finishing steps (not yet scripted):
+### Step 3 (recommended): Smoke-test the DMG locally
 
-1. Upload the notarized DMG to GitHub Releases under tag `v<VERSION>`.
+Mount `build/SSH-Keychain-<VERSION>.dmg`, drag the app to `/Applications`, run
+it, confirm "Check for Updates…" succeeds (you'll be told you're up to date),
+exit. If anything's wrong, rerun `release.sh` after fixing — nothing is
+public yet.
 
-2. Edit `appcast.xml` (hosted at `SUFeedURL`) using
-   `appcast.xml.template` as the starting point. Replace `{VERSION}`,
-   `{PUB_DATE}`, `{DMG_URL}`, `{DMG_LENGTH}`, `{ED_SIGNATURE}`, `{MIN_OS}`,
-   `{RELEASE_NOTES}`. Push to whatever host serves the SUFeedURL (GitHub Pages
-   if you go with the default).
+### Step 4: Publish
 
-3. Tag the commit and push:
-   ```sh
-   git tag -a v<VERSION> -m "Release v<VERSION>"
-   git push origin v<VERSION>
-   ```
+```sh
+./Distribution/publish.sh
+```
+
+(No env vars needed; the script reads `MARKETING_VERSION` and
+`CURRENT_PROJECT_VERSION` from `project.yml` and finds the matching DMG in
+`build/`.)
+
+Runs, in order:
+
+1. **Compute the Sparkle signature** for the DMG via `sign-update.sh`.
+2. **Convert release notes** from `release-notes/<VERSION>.md` to HTML using `uv run Distribution/convert-md-to-html.py` (auto-installs the `markdown` library in an isolated venv on first run).
+3. **Create a GitHub *draft* release** with `gh release create --draft`, uploading the DMG. The release isn't visible to users yet.
+4. **Resolve the canonical DMG download URL** from the GitHub API.
+5. **Insert a new `<item>`** into `docs/appcast.xml`, immediately after the `<!-- ITEMS_BELOW -->` sentinel. Validates with `xmllint`.
+6. **Commit `docs/appcast.xml`** as `release: v<VERSION>` and create an annotated `v<VERSION>` git tag.
+7. **Bump `MARKETING_VERSION` + `CURRENT_PROJECT_VERSION`** in `project.yml` (default patch bump; override with `BUMP=minor` or `BUMP=major` env var, or `BUMP=none` to skip). Commit as `bump: <OLD> -> <NEW>`.
+8. **Promote the GitHub release** from draft to published. This is the moment users can see the release on GitHub.
+
+`publish.sh` ends by printing the final manual command:
+```sh
+git push --follow-tags
+```
+(Optional — the script leaves the push to you so you can `git log -p` and verify the commits + tag before broadcasting.)
+
+### Rolling back BEFORE you push
+
+Everything between steps 1-8 is reversible:
+
+```sh
+gh release delete v<VERSION> --yes --repo josegonzalez/ssh-keychain
+git tag -d v<VERSION>
+git reset --hard HEAD~2     # ~1 if you used BUMP=none
+```
+
+After `git push`, rollback is socially costly (people may have already pulled
+the tag, fetched the appcast, etc.) — possible but not advisable.
+
+### Version bump policy
+
+`publish.sh`'s default is a patch bump. Override per release:
+
+```sh
+BUMP=minor ./Distribution/publish.sh   # 0.1.0 -> 0.2.0
+BUMP=major ./Distribution/publish.sh   # 0.1.0 -> 1.0.0
+BUMP=none  ./Distribution/publish.sh   # don't bump; useful when re-publishing a fix
+```
+
+The build number (`CURRENT_PROJECT_VERSION`) always increments by 1 unless
+`BUMP=none`. Sparkle compares this as a monotonic integer — it MUST go up for
+existing installations to see the new release as an update.
 
 ## Smoke testing without a Developer ID
 

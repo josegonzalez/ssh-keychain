@@ -2,8 +2,9 @@
 <!--
   Sparkle appcast feed for SSH Keychain.
 
-  Hosted at https://josegonzalez.github.io/ssh-keychain/appcast.xml via
-  GitHub Pages (Settings → Pages → Source: main / /docs).
+  Hosted at https://josediazgonzalez.com/ssh-keychain/appcast.xml via
+  GitHub Pages (Settings → Pages → Source: main / /docs, custom domain
+  josediazgonzalez.com).
 
   When you cut a release with Distribution/release.sh, copy the printed
   sparkle:edSignature + length values into a new <item> block below,
@@ -19,8 +20,9 @@
      xmlns:dc="http://purl.org/dc/elements/1.1/">
     <channel>
         <title>SSH Keychain</title>
-        <link>https://josegonzalez.github.io/ssh-keychain/appcast.xml</link>
+        <link>https://josediazgonzalez.com/ssh-keychain/appcast.xml</link>
         <description>Latest updates to SSH Keychain.</description>
         <language>en</language>
+        <!-- ITEMS_BELOW: publish.sh inserts new <item> blocks immediately after this line; do not delete. -->
     </channel>
 </rss>

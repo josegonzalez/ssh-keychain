@@ -13,9 +13,12 @@ xcuserdata/
 *.xcuserstate
 .netrc
 
-# XcodeGen produces SSHKeychainApp.xcodeproj from project.yml; the YAML is the
-# source of truth, the generated project isn't checked in.
+# XcodeGen produces SSHKeychainApp.xcodeproj plus Info.plist and the
+# entitlements file from project.yml; the YAML is the source of truth, the
+# generated artifacts aren't checked in. Regenerate with `xcodegen`.
 SSHKeychainApp/SSHKeychainApp.xcodeproj/
+SSHKeychainApp/SSHKeychainApp/Info.plist
+SSHKeychainApp/SSHKeychainApp/SSHKeychainApp.entitlements
 
 # Distribution outputs
 build/
